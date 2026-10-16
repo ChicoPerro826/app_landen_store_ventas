@@ -172,6 +172,9 @@ with tabs[1]:
 # ---------------------------------------------------------
 # TAB 3: IMPORTAR CATÁLOGO DESDE EXCEL
 # ---------------------------------------------------------
+# ---------------------------------------------------------
+# TAB 3: IMPORTAR CATÁLOGO DESDE EXCEL
+# ---------------------------------------------------------
 with tabs[2]:
     st.header("Cargar / Actualizar Catálogo")
     st.write("Subí tu planilla Excel para actualizar los perfumes, costos y precios de venta.")
@@ -180,7 +183,6 @@ with tabs[2]:
     
     if archivo_excel is not None:
         try:
-            # Si tiene varias hojas, permitimos seleccionar la hoja
             xls = pd.ExcelFile(archivo_excel)
             hoja_sel = st.selectbox("Seleccionar hoja del Excel", xls.sheet_names)
             df_subido = pd.read_excel(archivo_excel, sheet_name=hoja_sel)
@@ -198,9 +200,11 @@ with tabs[2]:
                     tipo = str(row.get('Tipo / Género', row.get('Tipo', 'Unisex'))).strip()
                     producto = str(row.get('Nombre del Producto', row.get('Nombre', row.get('Producto', '')))).strip()
                     
-                    # Extraer Costo y Precio de Venta
-                    costo_val = row.get('Precio (USD)', row.get('Precio Costo USD', row.get('Costo', 0)))
-                    precio_val = row.get('Precio USD', row.get('Precio Venta USD', row.get('Precio', 0)))
+                    # 🔍 Extraer Costo usando "Precio con Pasero (USD)"
+                    costo_val = row.get('Precio con Pasero (USD)', row.get('Precio (USD)', row.get('Costo', 0)))
+                    
+                    # 🔍 Extraer Precio Venta usando "Precio de venta en USD"
+                    precio_val = row.get('Precio de venta en USD', row.get('Precio USD', row.get('Precio Venta USD', 0)))
 
                     try:
                         costo_usd = float(str(costo_val).replace('$', '').replace(',', '').strip())
@@ -226,7 +230,7 @@ with tabs[2]:
 
                 conn.commit()
                 conn.close()
-                st.success(f"¡Se cargaron/actualizaron {count} perfumes exitosamente!")
+                st.success(f"¡Se cargaron/actualizaron {count} perfumes exitosamente con sus costos y precios!")
         except Exception as e:
             st.error(f"Error al procesar el archivo Excel: {e}")
 
